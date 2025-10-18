@@ -1,4 +1,4 @@
-FROM node:24-alpine AS builder
+FROM node:18-alpine AS builder
 
 RUN apk update && \
     apk add --no-cache git ffmpeg wget curl bash openssl
@@ -30,13 +30,14 @@ RUN ./Docker/scripts/generate_database.sh
 
 RUN npm run build
 
-FROM node:24-alpine AS final
+FROM node:18-alpine AS final
 
 RUN apk update && \
     apk add tzdata ffmpeg bash openssl
 
 ENV TZ=America/Sao_Paulo
 ENV DOCKER_ENV=true
+ENV NODE_ENV=production
 
 WORKDIR /evolution
 
@@ -54,6 +55,7 @@ COPY --from=builder /evolution/runWithProvider.js ./runWithProvider.js
 COPY --from=builder /evolution/tsup.config.ts ./tsup.config.ts
 
 ENV DOCKER_ENV=true
+ENV NODE_ENV=production
 
 EXPOSE 8080
 
