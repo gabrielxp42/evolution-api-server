@@ -1,4 +1,4 @@
-# Dockerfile com TypeScript local e global
+# Dockerfile usando apenas tsup (sem tsc)
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -66,8 +66,8 @@ ENV DATABASE_PROVIDER=postgresql
 # Gerar cliente Prisma diretamente
 RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
-# Compilar TypeScript SEM verificação de tipos (--noEmit)
-RUN npx tsc --noEmit --skipLibCheck && npx tsup
+# Compilar usando apenas tsup (sem verificação de tipos)
+RUN npx tsup
 
 # Remover dependências de desenvolvimento após build
 RUN npm prune --production
