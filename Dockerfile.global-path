@@ -1,4 +1,4 @@
-# Dockerfile DIAGNÓSTICO - Investigar problema do TypeScript
+# Dockerfile SOLUÇÃO DEFINITIVA - Caminho absoluto do TypeScript global
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -52,24 +52,9 @@ RUN npm install --legacy-peer-deps --ignore-scripts
 # Instalar TypeScript localmente também
 RUN npm install --save-dev typescript@latest --legacy-peer-deps
 
-# DIAGNÓSTICO COMPLETO
-RUN echo "=== DIAGNÓSTICO TYPESCRIPT ==="
+# Verificar se TypeScript está instalado
 RUN which tsc
 RUN tsc --version
-RUN echo "=== PATH ==="
-RUN echo $PATH
-RUN echo "=== NODE_MODULES TYPESCRIPT ==="
-RUN ls -la node_modules/.bin/ | grep tsc || echo "tsc não encontrado em node_modules/.bin"
-RUN echo "=== GLOBAL TYPESCRIPT ==="
-RUN ls -la /usr/local/bin/ | grep tsc || echo "tsc não encontrado em /usr/local/bin"
-RUN echo "=== NPM LIST GLOBAL ==="
-RUN npm list -g typescript
-RUN echo "=== NPM LIST LOCAL ==="
-RUN npm list typescript
-RUN echo "=== TSUP VERSION ==="
-RUN npx tsup --version || echo "tsup não encontrado"
-RUN echo "=== TSUP CONFIG ==="
-RUN cat tsup.config.ts || echo "tsup.config.ts não encontrado"
 
 # Copiar código fonte
 COPY src ./src
@@ -85,15 +70,15 @@ ENV DATABASE_PROVIDER=postgresql
 # Gerar cliente Prisma diretamente
 RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
-# Tentar compilar com diferentes métodos
-RUN echo "=== TENTATIVA 1: npx tsup ==="
-RUN npx tsup || echo "FALHOU: npx tsup"
+# Configurar PATH para incluir TypeScript global
+ENV PATH="/usr/local/bin:${PATH}"
 
-RUN echo "=== TENTATIVA 2: /usr/local/bin/tsc ==="
-RUN /usr/local/bin/tsc --version || echo "FALHOU: /usr/local/bin/tsc"
+# Compilar usando caminho absoluto do TypeScript global
+RUN /usr/local/bin/tsc --version
+RUN npx tsup
 
-RUN echo "=== TENTATIVA 3: node_modules/.bin/tsup ==="
-RUN ./node_modules/.bin/tsup || echo "FALHOU: ./node_modules/.bin/tsup"
+# Remover dependências de desenvolvimento após build
+RUN npm prune --production
 
 # Expor porta
 EXPOSE 8080
