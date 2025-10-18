@@ -1,4 +1,4 @@
-# Dockerfile SIMPLES - Apenas TypeScript sem aliases
+# Dockerfile COM ESBUILD - Alternativa ao tsup
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -43,10 +43,14 @@ RUN npm install -g typescript@latest --legacy-peer-deps
 # Copiar arquivos de dependências
 COPY package*.json ./
 COPY tsconfig.json ./
+COPY tsup.config.ts ./
 COPY .npmrc ./
 
 # Instalar dependências do projeto
 RUN npm install --legacy-peer-deps --ignore-scripts
+
+# INSTALAR ESBUILD COMO ALTERNATIVA AO TSUP
+RUN npm install esbuild --save-dev --legacy-peer-deps
 
 # Copiar código fonte
 COPY src ./src
@@ -62,8 +66,8 @@ ENV DATABASE_PROVIDER=postgresql
 # Gerar cliente Prisma diretamente
 RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
-# COMPILAR COM TYPESCRIPT SIMPLES - Sem aliases
-RUN tsc --outDir dist --skipLibCheck --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --baseUrl . --paths '{}'
+# COMPILAR COM TYPESCRIPT DIRETO - Sem aliases problemáticos
+RUN tsc --outDir dist --skipLibCheck --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop
 
 # Verificar se dist/src/main.js foi criado
 RUN ls -la dist/src/main.js || echo "main.js não encontrado"
