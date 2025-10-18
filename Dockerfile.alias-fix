@@ -1,4 +1,4 @@
-# Dockerfile COM TSUP - Resolver aliases automaticamente
+# Dockerfile CORRIGIDO - Resolver aliases do TypeScript
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -46,7 +46,7 @@ COPY tsconfig.json ./
 COPY tsup.config.ts ./
 COPY .npmrc ./
 
-# Instalar dependências do projeto (incluindo devDependencies para tsup)
+# Instalar dependências do projeto
 RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copiar código fonte
@@ -63,11 +63,12 @@ ENV DATABASE_PROVIDER=postgresql
 # Gerar cliente Prisma diretamente
 RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
-# COMPILAR COM TSUP - Resolve aliases automaticamente
-RUN npx tsup
+# COMPILAR COM TYPESCRIPT GLOBAL - SEM ALIASES
+RUN tsc --noEmit --skipLibCheck
+RUN tsc --outDir dist --skipLibCheck --baseUrl . --paths '{}'
 
-# Verificar se dist/main.js foi criado
-RUN ls -la dist/main.js || echo "main.js não encontrado"
+# Verificar se dist/src/main.js foi criado
+RUN ls -la dist/src/main.js || echo "main.js não encontrado"
 
 # Remover dependências de desenvolvimento após build
 RUN npm prune --production
@@ -75,5 +76,5 @@ RUN npm prune --production
 # Expor porta
 EXPOSE 8080
 
-# Comando de inicialização - TSUP gera dist/main.js
-CMD ["node", "dist/main.js"]
+# Comando de inicialização - CAMINHO CORRETO
+CMD ["node", "dist/src/main.js"]
