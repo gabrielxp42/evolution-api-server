@@ -1,4 +1,4 @@
-# Dockerfile SOLUÇÃO FINAL - Apenas tsup
+# Dockerfile que modifica package.json para usar apenas tsup
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -60,8 +60,11 @@ ENV DATABASE_PROVIDER=postgresql
 # Gerar cliente Prisma diretamente
 RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
-# Compilar usando apenas tsup (sem tsc)
-RUN npx tsup
+# Modificar package.json para usar apenas tsup
+RUN sed -i 's/"build": "tsc --noEmit && tsup"/"build": "tsup"/' package.json
+
+# Compilar usando npm run build (agora só tsup)
+RUN npm run build
 
 # Remover dependências de desenvolvimento após build
 RUN npm prune --production
