@@ -1,7 +1,7 @@
 FROM node:18-alpine AS builder
 
 RUN apk update && \
-    apk add --no-cache git ffmpeg wget curl bash openssl
+    apk add --no-cache git ffmpeg wget curl bash openssl python3 make g++
 
 LABEL version="2.3.1" description="Api to control whatsapp features through http requests." 
 LABEL maintainer="Davidson Gomes" git="https://github.com/DavidsonGomes"
@@ -9,11 +9,15 @@ LABEL contact="contato@evolution-api.com"
 
 WORKDIR /evolution
 
+# Limpar cache do npm
+RUN npm cache clean --force
+
 COPY ./package*.json ./
 COPY ./tsconfig.json ./
 COPY ./tsup.config.ts ./
 
-RUN npm ci --silent
+# Instalar dependências com verbose para debug
+RUN npm install --verbose
 
 COPY ./src ./src
 COPY ./public ./public
