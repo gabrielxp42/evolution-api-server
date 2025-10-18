@@ -1,4 +1,4 @@
-# Dockerfile com Prisma Generate
+# Dockerfile SIMPLES com Prisma
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -57,11 +57,11 @@ COPY manager ./manager
 COPY Docker ./Docker
 COPY runWithProvider.js ./
 
-# Executar script de geração do banco (necessário para Prisma)
-RUN ./Docker/scripts/generate_database.sh
+# Configurar variáveis para Prisma
+ENV DATABASE_PROVIDER=postgresql
 
-# Gerar cliente Prisma
-RUN npx prisma generate
+# Gerar cliente Prisma diretamente
+RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
 # Compilar TypeScript (agora com Prisma gerado)
 RUN npm run build
