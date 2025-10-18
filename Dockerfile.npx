@@ -1,4 +1,4 @@
-# Dockerfile com TypeScript GLOBAL
+# Dockerfile usando NPX
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -37,9 +37,6 @@ WORKDIR /evolution
 # Limpar cache do npm
 RUN npm cache clean --force
 
-# Instalar TypeScript e tsup GLOBALMENTE
-RUN npm install -g typescript tsup --legacy-peer-deps
-
 # Copiar arquivos de dependências
 COPY package*.json ./
 COPY tsconfig.json ./
@@ -60,8 +57,8 @@ COPY runWithProvider.js ./
 # PULAR script de geração do banco (problemático)
 # RUN ./Docker/scripts/generate_database.sh
 
-# Compilar TypeScript (agora com tsc global)
-RUN npm run build
+# Compilar TypeScript usando NPX
+RUN npx tsc --noEmit && npx tsup
 
 # Remover dependências de desenvolvimento após build
 RUN npm prune --production
