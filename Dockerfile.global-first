@@ -1,4 +1,4 @@
-# Dockerfile SOLUÇÃO DEFINITIVA - TypeScript primeiro
+# Dockerfile SOLUÇÃO DEFINITIVA - TypeScript global primeiro
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -37,6 +37,9 @@ WORKDIR /evolution
 # Limpar cache do npm
 RUN npm cache clean --force
 
+# Instalar TypeScript GLOBALMENTE primeiro
+RUN npm install -g typescript --legacy-peer-deps
+
 # Copiar arquivos de dependências
 COPY package*.json ./
 COPY tsconfig.json ./
@@ -46,7 +49,7 @@ COPY .npmrc ./
 # Instalar dependências do projeto
 RUN npm install --legacy-peer-deps --ignore-scripts
 
-# Instalar TypeScript como dependência de desenvolvimento
+# Instalar TypeScript localmente também
 RUN npm install --save-dev typescript --legacy-peer-deps
 
 # Copiar código fonte
