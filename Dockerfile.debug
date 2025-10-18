@@ -1,4 +1,4 @@
-# Dockerfile DIAGNÓSTICO - Investigar problema do TypeScript
+# Dockerfile COM DIAGNÓSTICO COMPLETO
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -37,7 +37,7 @@ WORKDIR /evolution
 # Limpar cache do npm
 RUN npm cache clean --force
 
-# Instalar TypeScript GLOBALMENTE primeiro
+# Instalar TypeScript GLOBALMENTE
 RUN npm install -g typescript@latest --legacy-peer-deps
 
 # Copiar arquivos de dependências
@@ -48,28 +48,6 @@ COPY .npmrc ./
 
 # Instalar dependências do projeto
 RUN npm install --legacy-peer-deps --ignore-scripts
-
-# Instalar TypeScript localmente também
-RUN npm install --save-dev typescript@latest --legacy-peer-deps
-
-# DIAGNÓSTICO COMPLETO
-RUN echo "=== DIAGNÓSTICO TYPESCRIPT ==="
-RUN which tsc
-RUN tsc --version
-RUN echo "=== PATH ==="
-RUN echo $PATH
-RUN echo "=== NODE_MODULES TYPESCRIPT ==="
-RUN ls -la node_modules/.bin/ | grep tsc || echo "tsc não encontrado em node_modules/.bin"
-RUN echo "=== GLOBAL TYPESCRIPT ==="
-RUN ls -la /usr/local/bin/ | grep tsc || echo "tsc não encontrado em /usr/local/bin"
-RUN echo "=== NPM LIST GLOBAL ==="
-RUN npm list -g typescript
-RUN echo "=== NPM LIST LOCAL ==="
-RUN npm list typescript
-RUN echo "=== TSUP VERSION ==="
-RUN npx tsup --version || echo "tsup não encontrado"
-RUN echo "=== TSUP CONFIG ==="
-RUN cat tsup.config.ts || echo "tsup.config.ts não encontrado"
 
 # Copiar código fonte
 COPY src ./src
@@ -85,18 +63,38 @@ ENV DATABASE_PROVIDER=postgresql
 # Gerar cliente Prisma diretamente
 RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
-# Tentar compilar com diferentes métodos
-RUN echo "=== TENTATIVA 1: npx tsup ==="
-RUN npx tsup || echo "FALHOU: npx tsup"
+# === DIAGNÓSTICO COMPLETO ===
+RUN echo "=== VERIFICANDO ESTRUTURA ANTES DA COMPILAÇÃO ==="
+RUN ls -la
+RUN ls -la src/
+RUN ls -la src/main.ts || echo "main.ts não encontrado"
 
-RUN echo "=== TENTATIVA 2: /usr/local/bin/tsc ==="
-RUN /usr/local/bin/tsc --version || echo "FALHOU: /usr/local/bin/tsc"
+RUN echo "=== VERIFICANDO TYPESCRIPT ==="
+RUN tsc --version
+RUN which tsc
 
-RUN echo "=== TENTATIVA 3: node_modules/.bin/tsup ==="
-RUN ./node_modules/.bin/tsup || echo "FALHOU: ./node_modules/.bin/tsup"
+RUN echo "=== VERIFICANDO TSCONFIG ==="
+RUN cat tsconfig.json
+
+RUN echo "=== COMPILANDO COM TYPESCRIPT ==="
+RUN tsc --noEmit --skipLibCheck
+RUN echo "=== COMPILAÇÃO SEM ERROS, AGORA COMPILANDO PARA DIST ==="
+RUN tsc --outDir dist --skipLibCheck
+
+RUN echo "=== VERIFICANDO RESULTADO DA COMPILAÇÃO ==="
+RUN ls -la dist/ || echo "dist não existe"
+RUN find dist -name "*.js" || echo "nenhum .js encontrado"
+RUN find dist -name "main*" || echo "main não encontrado"
+RUN ls -la dist/main* || echo "main específico não encontrado"
+
+RUN echo "=== VERIFICANDO CONTEÚDO DO DIST ==="
+RUN find dist -type f -exec echo "Arquivo: {}" \; -exec head -5 {} \; || echo "erro ao listar arquivos"
+
+# Remover dependências de desenvolvimento após build
+RUN npm prune --production
 
 # Expor porta
 EXPOSE 8080
 
 # Comando de inicialização
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main.js"]

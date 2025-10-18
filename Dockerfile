@@ -1,4 +1,4 @@
-# Dockerfile CORRIGIDO - Compilação TypeScript funcionando
+# Dockerfile COM DIAGNÓSTICO COMPLETO
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -63,17 +63,32 @@ ENV DATABASE_PROVIDER=postgresql
 # Gerar cliente Prisma diretamente
 RUN npx prisma generate --schema ./prisma/postgresql-schema.prisma
 
-# COMPILAR COM TYPESCRIPT GLOBAL (sem tsup)
-RUN echo "=== COMPILANDO COM TYPESCRIPT GLOBAL ==="
+# === DIAGNÓSTICO COMPLETO ===
+RUN echo "=== VERIFICANDO ESTRUTURA ANTES DA COMPILAÇÃO ==="
+RUN ls -la
+RUN ls -la src/
+RUN ls -la src/main.ts || echo "main.ts não encontrado"
+
+RUN echo "=== VERIFICANDO TYPESCRIPT ==="
 RUN tsc --version
+RUN which tsc
+
+RUN echo "=== VERIFICANDO TSCONFIG ==="
+RUN cat tsconfig.json
+
+RUN echo "=== COMPILANDO COM TYPESCRIPT ==="
 RUN tsc --noEmit --skipLibCheck
+RUN echo "=== COMPILAÇÃO SEM ERROS, AGORA COMPILANDO PARA DIST ==="
 RUN tsc --outDir dist --skipLibCheck
 
-# Verificar se dist/main.js foi criado
-RUN echo "=== VERIFICANDO DIST ==="
+RUN echo "=== VERIFICANDO RESULTADO DA COMPILAÇÃO ==="
 RUN ls -la dist/ || echo "dist não existe"
-RUN ls -la dist/main* || echo "main não encontrado"
-RUN find dist -name "*.js" | head -10 || echo "nenhum .js encontrado"
+RUN find dist -name "*.js" || echo "nenhum .js encontrado"
+RUN find dist -name "main*" || echo "main não encontrado"
+RUN ls -la dist/main* || echo "main específico não encontrado"
+
+RUN echo "=== VERIFICANDO CONTEÚDO DO DIST ==="
+RUN find dist -type f -exec echo "Arquivo: {}" \; -exec head -5 {} \; || echo "erro ao listar arquivos"
 
 # Remover dependências de desenvolvimento após build
 RUN npm prune --production
@@ -81,5 +96,5 @@ RUN npm prune --production
 # Expor porta
 EXPOSE 8080
 
-# Comando de inicialização - CORRIGIDO para dist/main.js
+# Comando de inicialização
 CMD ["node", "dist/main.js"]
