@@ -1,4 +1,4 @@
-# Dockerfile otimizado para Railway
+# Dockerfile super otimizado para Railway
 FROM node:20-alpine
 
 # Instalar dependências do sistema
@@ -41,8 +41,8 @@ COPY package*.json ./
 COPY tsconfig.json ./
 COPY tsup.config.ts ./
 
-# Instalar dependências
-RUN npm install --production
+# Instalar dependências (sem --production para incluir dev dependencies necessárias)
+RUN npm install --legacy-peer-deps
 
 # Copiar código fonte
 COPY src ./src
