@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "target": "es2020",
+    "module": "CommonJS",
+    "rootDir": "./",
+    "resolveJsonModule": true,
+    "removeComments": true,
+    "outDir": "./dist",
+    "noEmitOnError": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "incremental": true,
+    "noImplicitAny": false,
+    "baseUrl": ".",
+    "moduleResolution": "Node"
+  },
+  "exclude": ["node_modules", "./test", "./dist", "./prisma"],
+  "include": [
+    "src/**/*",
+    "src/**/*.json"
+  ]
+}
