@@ -77,6 +77,10 @@ export class EventController {
       return;
     }
 
+    if (undefined === this.monitor.waInstances[instanceName]) {
+      return null;
+    }
+
     if (!data[this.name]?.enabled) {
       data[this.name].events = [];
     } else {
