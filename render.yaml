@@ -3,7 +3,7 @@ services:
     name: evolution-api
     env: node
     buildCommand: npm install && npm run db:generate && npm run build
-    startCommand: chmod +x init-db.sh && ./init-db.sh
+    startCommand: npm run start:with-migrations
     envVars:
       - key: DATABASE_PROVIDER
         value: postgresql
