@@ -3,7 +3,7 @@ services:
     name: evolution-api
     env: node
     buildCommand: npm install && npm run db:generate && npm run build
-    startCommand: npm run start:prod
+    startCommand: npm run db:deploy && npm run start:prod
     envVars:
       - key: DATABASE_PROVIDER
         value: postgresql
