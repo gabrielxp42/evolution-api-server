@@ -27,6 +27,13 @@ npm run db:deploy || {
 echo "✅ Migrações concluídas (ou já aplicadas)"
 echo "🚀 Iniciando servidor..."
 
+# Verificar se dist/main.js existe
+if [ ! -f "dist/main.js" ]; then
+  echo "❌ ERRO: dist/main.js não encontrado! O build pode ter falhado."
+  echo "📦 Tentando fazer build novamente..."
+  npm run build
+fi
+
 # Iniciar servidor
-exec npm run start:prod
+exec node dist/main.js
 
